@@ -106,6 +106,61 @@ else:
         enhanced_resume = json.loads(json.dumps(parsed_resume.model_dump()))
 print(f"Enhanced Resume:{enhanced_resume}")
 
+# ATS And JD matching
+job_description = """
+Role: Machine Learning Engineer (2-3 years exp)
+Key Skills: Python, SQL, PyTorch, FastAPI, AWS, Docker, LangChain, LLMs.
+Responsibilities: Build MLOps pipelines, deploy APIs, and work with Generative AI models.
+Education: BS/MS in Computer Science.
+"""
+ats_prompt = ChatPromptTemplate.from_template("""
+You are an ATS analyzer.
+
+Compare the resume with the Job Description below.
+
+Return JSON with:
+- ats_score (0–100)
+- missing_keywords
+- recommended_keywords_to_add
+- suggested_improvements (bullets)
+- tailored_summary
+
+Resume:
+```json
+{resume_json}```
+
+Job Description:
+```{jd}
+
+Return JSON only.
+""")
+messages = ats_prompt.format_messages(
+    resume_json=json.dumps(enhanced_resume),
+    jd=job_description
+)
+
+response = llm.invoke(messages)
+raw = response.content
+
+clean = (
+    raw.replace("```json", "")
+       .replace("```", "")
+       .strip()
+)
+try:
+    ats_output = json.loads(clean)
+except json.JSONDecodeError:
+    print("❌ Invalid JSON from model:")
+    print(clean)
+    raise
+print(ats_output)
+
+
+
+
+
+
+
 
 
 
