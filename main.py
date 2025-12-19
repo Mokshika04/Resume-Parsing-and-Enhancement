@@ -12,10 +12,11 @@ import json
 
 # Loading the PDF
 file_path = r"C:\Users\91727\Desktop\Mokshika Pandey_Resume (2).pdf"
-loader = PyPDFLoader(file_path, mode="single")
+loader = PyPDFLoader(file_path)
 docs = loader.load()
 print(len(docs))
-pprint.pp(docs[0].page_content)
+full_resume_text = "\n".join([doc.page_content for doc in docs])
+pprint.pp(full_resume_text)
 
 # Resume Schema
 class ExperienceItem(BaseModel):
@@ -54,7 +55,7 @@ Resume text:
 """)
 
 messages = parse_prompt.format_messages(
-    text=docs[0].page_content,
+    text=full_resume_text,
     format_instructions=parser.get_format_instructions()
 )
 
